@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>COLORPOP</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="contain">
+		<header id="title">COLORPOP</header>
+	</div>
+	<div class="contain">
+		<canvas id="mycanvas" width="500" height="500"></canvas>
+	</div>
+	<div class="contain">
+		<h2 id="timer">START</h2>
+	</div>
+</body>
+<script type="text/javascript">
+	var canvas = document.getElementById('mycanvas');
+	var title = document.getElementById('title');
+	var timer = document.getElementById('timer');
+	var ctx = canvas.getContext('2d');
+
+	var speed = 30;
+	var snd = new Audio("BG.mp3");
+	var hala = new Audio("hala.mp3");
+	var imong = new Audio("dilagi.mp3");
+	var kaluoy = new Audio("kaluoy.mp3");
+	var countdown;
+	var interval;
+	var bground = setInterval(loopBG, 5000);
+	var kl;
+	var blink;
+	var score = 0;
+	var bubbles = [];
+	var counter = 2;
+	var ctr;
+	var rad = 120;
+	var oddX;
+	var oddY;
+	var r = randomBetween(0, 255), g = randomBetween(0, 255), b = randomBetween(0, 255), s = 0, t = 0;
+
+	buildWorld();
+
+	title.onclick = function(e){
+		location.reload();
+	}
+
+	function buildWorld(){
+		ctx.clearRect(0, 0, 600, 600);
+		ctx.font="70px Helvetica";
+		ctx.fillStyle = "white";
+		ctx.textAlign = "center";
+		ctx.fillText("PICK ODD", canvas.width/2, canvas.height/5);
+		ctx.fillText("COLOR OUT", canvas.width/2, canvas.height/4);
+
+		ctx.fillText("PICK ODD", canvas.width/2, (canvas.height/2) - 50);
+		ctx.fillText("PICK ODD", canvas.width/2 + 20, (canvas.height/2));
+
+		
+		ctx.fillText("COLOR OUT", canvas.width/2 -20, (canvas.height/2) + 50);
+		ctx.fillText("COLOR OUT", canvas.width/2, (canvas.height/2) + 100);
+
+		ctx.fillText("PICK ODD", canvas.width/2, canvas.height/2 + 180);
+		ctx.fillText("COLOR OUT", canvas.width/2, canvas.height/2 + 200);
+	}
+
+	function loopBG(){
+		snd.currentTime = 0.0;
+		snd.play();
+	}
+
+	function loopKL(){
+		kaluoy.currentTime = 0.7;
+		kaluoy.play();
+	}
+
+	timer.onclick = function (e) {
+		if(timer.innerHTML == "START AGAIN" || timer.innerHTML == "START"){
+			snd.pause();
+			timer.style = timer.style.color = "red";
+			score = 0;
+			gameOver = false;
+			timer.innerHTML = "10";
+			countdown = setInterval(gameTimer, 900);
+			interval = setInterval(rose, speed);
+
+			bubbles = [];
+			counter = 2;
+			rad = 120;
+			t = 0;
+			resetTime();
+			setBubbles();
+			kl = setInterval(loopKL, 1000);
+			clearInterval(blink);
+			clearInterval(bground);
+		} 
+	}
+
+	function blinky(){
+		if(t % 2 == 0){
+			ctx.fillStyle = setRGB(s);
+			ctx.beginPath();
+            ctx.arc(oddX, oddY, rad, 0, Math.PI * 2, false);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+            ctx.closePath();
+
+			ctx.font="70px Helvetica";
+			ctx.fillStyle = "white";
+			ctx.textAlign = "center";
+			ctx.fillText("GAME OVER", canvas.width/2, canvas.height/4);
+			ctx.font="300px Helvetica";
+			ctx.fillStyle = "white";
+			ctx.textAlign = "center";
+
+			ctx.fillText(score, canvas.width/2, canvas.height - canvas.height/5);
+		} else {
+			ctx.clearRect(0, 0, 600, 600);
+
+			ctx.fillStyle = setRGB(s);
+			ctx.beginPath();
+            ctx.arc(oddX, oddY, rad, 0, Math.PI * 2, false);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+            ctx.closePath();
+
+			ctx.font="300px Helvetica";
+			ctx.fillStyle = "white";
+			ctx.textAlign = "center";
+			ctx.fillText(score, canvas.width/2, canvas.height - canvas.height/5);
+
+			ctx.fillText(score, canvas.width/2, canvas.height - canvas.height/5);
+		}
+		t++;
+	}
+
+	function setBubbles(){
+		bubbles = [];
+		ctr = counter + counter/2;
+		for (var i = 0; i < ctr; i++) {
+			console.log(ctr);
+			bubbles.push(new Bubble());
+			if(i == Math.floor(ctr/2)){
+				do{
+					s = randomBetween(-1, 1);
+					bubbles[i].rgb = setRGB(s);	
+					console.log(bubbles[i].rgb);
+					console.log(s);
+				} while(s == 0);
+			} else {
+				console.log(bubbles[i].rgb);
+			}
+		}
+	}
+
+	function resetTime() {
+		isWaiting = false;
+    	isRunning = false;
+   		seconds = 10;
+    	finalCountdown = false;
+	}
+
+	var gameOver = false;
+    var seconds = 9;
+    var finalCountdown = false;
+
+	function gameTimer() {
+		var minutes = Math.round((seconds - 30) / 60);
+	    var remainingSeconds = seconds % 60;
+	    if (remainingSeconds < 10) {
+	        remainingSeconds = "0" + remainingSeconds;
+	    }
+	    timer.innerHTML = remainingSeconds;
+	    if (seconds == 0) {
+	    	snd.pause();
+	    	snd.currentTime = 0.0;
+	    	snd.play();
+            gameOver = true;
+	        timer.innerHTML = "START AGAIN";
+            clearInterval(interval);
+            clearInterval(countdown);
+            clearInterval(kl);
+            blink = setInterval(blinky, 1000);
+            bground = setInterval(loopBG, 5000);
+	    } else {
+	        seconds--;
+	    }
+	}
+
+	function rose(){
+		ctx.clearRect(0, 0, 600, 600);
+		var bubble;
+		for(var i = 0; i < ctr ; i++){
+			bubble = bubbles[i].update();
+			console.log(ctr);
+			if(i == Math.floor(ctr/2)){
+				bubble.draw();
+
+				oddX = bubble.x;
+				oddY = bubble.y;
+			} else {
+				bubble.draw();
+			}
+		}
+	}
+
+	canvas.onmousedown = function(e) {
+		var rect = this.getBoundingClientRect();
+		var pointx = e.clientX - rect.left;
+		var pointy = e.clientY - rect.top;
+		  
+		getArc(oddX, oddY, rad);
+
+		if (ctx.isPointInPath(pointx, pointy) && !gameOver){
+			score++;
+			timer.innerHTML = "10";
+			resetTime();
+			clearInterval(kl);
+			clearInterval(interval);
+			clearInterval(countdown);
+			countdown = setInterval(gameTimer, 900);
+			ctx.clearRect(0, 0, 600, 600);
+			counter++;
+			rad *= .96;
+			r = randomBetween(0, 255), g = randomBetween(0, 255), b = randomBetween(0, 255), s = 0;
+			setBubbles();
+			// speed+=7.5;
+			jumpx *= .94;
+			jumpy *= .94;
+			interval = setInterval(rose, speed);
+
+			kl = setInterval(loopKL, 1000);
+			hala.currentTime = 0.0;
+			hala.play();
+		} else {
+			if(seconds > 1){
+				seconds--;
+				imong.currentTime = 0.0;
+				imong.play();
+			}
+		}
+	}
+
+	var jumpx = 14, jumpy = 14;
+
+	function Bubble(){
+		this.rad = rad;
+		this.x = randomBetween(0 + this.rad, canvas.width  - this.rad);
+		this.y = randomBetween(0 + this.rad, canvas.height - this.rad);
+		this.rgb = setRGB(0);
+
+		do{
+			this.movx = randomBetween(-jumpx, jumpx);
+		} while(this.movx == 0);
+
+		do{
+			this.movy = randomBetween(-jumpy, jumpy);
+		} while(this.movy == 0);
+
+		this.update = function(){
+			if (this.x - this.rad <= 0 || this.x + this.rad >= canvas.width) {
+				this.movx = -this.movx;
+			}
+			if (this.y - this.rad <= 0 || this.y + this.rad >= canvas.height) {
+				this.movy = -this.movy;
+			}
+
+			this.x += this.movx;
+			this.y += this.movy;
+
+			return this;
+		}
+
+		this.draw = function() {
+			ctx.fillStyle = this.rgb;
+			ctx.beginPath();
+            ctx.arc(this.x, this.y, this.rad, 0, Math.PI * 2, false);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+            ctx.closePath();
+		}
+
+		this.odd = function(){
+			ctx.fillStyle = "red";
+			ctx.beginPath();
+            ctx.arc(this.x, this.y, this.rad, 0, Math.PI * 2, false);
+            ctx.fill();
+            ctx.closePath();
+		}
+	}
+
+	function setRGB(shade) {
+		var steps = 10;
+   		var dr = (255 - r) / steps,
+			dg = (255 - g) / steps,
+    		db = (255 - b) / steps;
+
+    	return 'rgb(' + Math.round(r + dr * shade) + ','
+            + Math.round(g + dg * shade) + ','
+            + Math.round(b + db * shade) + ')';
+	}
+
+	function randomBetween(min,max) {
+		return Math.floor((Math.random()*(max - min)+min));
+	}
+
+	function getArc(x, y, r) {
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, Math.PI*2, false);
+		ctx.closePath();
+	}
+</script>
+</html>
